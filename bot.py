@@ -26,12 +26,12 @@ def nudgeUsers():
                         continue
                     author = comment.author
                     #Avoids infinite response to keyword
-                    if (author == "NudgeBot"):
+                    if (author == settings.get("username")):
                         continue
                     #Avoids duplicate responses to same comment containing keyword
                     for response in comment.replies:
                         if hasattr(response, "body"):
-                            if (response.author == "NudgeBot"):
+                            if (response.author == settings.get("username")):
                                 flag = True
                                 break
                     if (not flag):
