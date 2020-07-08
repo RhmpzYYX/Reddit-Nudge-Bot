@@ -59,7 +59,7 @@ def instruct():
                     sentence = "".join(comment.body.split())
                     try:
                         if (sentence == "!NudgeBot"):
-                            comment.reply("Hi! You can comment !NudgeBot [Username_of_user_here (without the /u/)] under a post to nudge someone :)")
+                            comment.reply("Hi! You can comment !Nudge [Username_of_user_here (without the /u/)] under a post to nudge someone :)")
                             print("Comment successful")
                     except RedditAPIException as exception:
                         print(exception)        
