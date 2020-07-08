@@ -1,5 +1,6 @@
 import praw
 from configs import settings
+from praw.exceptions import RedditAPIException
 
 reddit = praw.Reddit(client_id=settings.get("client_id"),
                      client_secret=settings.get("client_secret"),
@@ -17,27 +18,34 @@ def nudgeUsers():
     for submission in subreddit.new(limit=36):
         for comment in submission.comments:
             if hasattr(comment, "body"):
+                flag = False
                 if ("!Nudge" in comment.body):
                     sentenceList = comment.body.split()
                     #Edge check if last word of the comment is !Nudge which results in an invalid user
                     if (sentenceList[-1] == "!Nudge"):
-                        return
+                        continue
                     author = comment.author
                     #Avoids infinite response to keyword
                     if (author == "NudgeBot"):
-                        return
+                        continue
                     #Avoids duplicate responses to same comment containing keyword
                     for response in comment.replies:
                         if hasattr(response, "body"):
                             if (response.author == "NudgeBot"):
-                                return
-                    usernameIndex = sentenceList.index("!Nudge")
-                    receivingUser = sentenceList[usernameIndex+1]
-                    #Corrects Reddit name formatting for underscores
-                    receivingUser = receivingUser.replace("\\_", "_")
-                    comment.reply("You nudged /u/{}".format(receivingUser))
-                    reddit.redditor(receivingUser).message("{} nudged you".format(author), "{}".format(comment.permalink))
-                    print("Nudge successful")
+                                flag = True
+                                break
+                    if (not flag):
+                        print(comment.body)
+                        usernameIndex = sentenceList.index("!Nudge")
+                        receivingUser = sentenceList[usernameIndex+1]
+                        #Corrects Reddit name formatting for underscores
+                        receivingUser = receivingUser.replace("\\_", "_")
+                        try:
+                            comment.reply("You nudged /u/{}".format(receivingUser))
+                            reddit.redditor(receivingUser).message("{} nudged you".format(author), "{}".format(comment.permalink))
+                            print("Nudge successful")
+                        except RedditAPIException as exception:
+                            print(exception)
 
 
 def instruct():
@@ -49,8 +57,12 @@ def instruct():
             if hasattr(comment, "body"):
                 if ("!NudgeBot" in comment.body):
                     sentence = "".join(comment.body.split())
-                    if (sentence == "!NudgeBot"):
-                        comment.reply("Hi! You can comment !NudgeBot [Username_of_user_here (without the /u/)] under a post to nudge someone :)")
+                    try:
+                        if (sentence == "!NudgeBot"):
+                            comment.reply("Hi! You can comment !NudgeBot [Username_of_user_here (without the /u/)] under a post to nudge someone :)")
+                            print("Comment successful")
+                    except RedditAPIException as exception:
+                        print(exception)        
 
 
 def main():
@@ -58,6 +70,6 @@ def main():
     instruct()
 
 
-if __name__ == "__main__":
+if (__name__ == "__main__"):
     main()
 
