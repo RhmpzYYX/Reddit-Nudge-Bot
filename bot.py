@@ -1,4 +1,6 @@
 import praw
+import time
+import threading
 from configs import settings
 from praw.exceptions import RedditAPIException
 
@@ -9,7 +11,6 @@ reddit = praw.Reddit(client_id=settings.get("client_id"),
                      password=settings.get("password"))
 
 subreddit = reddit.subreddit(settings.get("subreddit"))
-
 
 def nudgeUsers():
     '''
@@ -66,10 +67,15 @@ def instruct():
 
 
 def main():
-    nudgeUsers()
-    instruct()
+    thread1 = threading.Thread(target=nudgeUsers)
+    thread2 = threading.Thread(target=instruct)
+    thread1.start()
+    thread2.start()
+    thread1.join()
+    thread2.join()
+    finish = time.perf_counter()
+    print("Finish time: {} seconds".format(finish))
 
 
 if (__name__ == "__main__"):
     main()
-
